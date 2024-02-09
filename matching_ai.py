@@ -115,7 +115,7 @@ mentees_df.to_csv('mentees_offset_analysis.csv', index=True)
 match_info = []
 
 # Define rewards and penalties 
-offset_reward = 100  # Example reward for offset within the threshold
+offset_reward = 100  # Reward for offset within the threshold
 offset_penalty = -150  # Penalty for offset beyond the threshold
 yoe_ideal_reward = 200  # Reward for ideal YOE difference
 yoe_reward_ideal = 100  # Reward for YOE difference of 2-3 years
@@ -295,7 +295,7 @@ match_scores_df.to_csv('match_3_openanswer.csv')
 
 #3.5 Rewarding Mentees Who Applied to Be Mentors
 # Define the reward for mentees who have also applied to be mentors
-mentee_mentor_application_reward = 15  # Example reward value
+mentee_mentor_application_reward = 15 
 
 # Loop through each match to update the score based on mentee's application to be a mentor
 for match in match_info:
