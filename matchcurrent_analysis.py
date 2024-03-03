@@ -25,10 +25,12 @@ print(f"Standard Deviation of Score: {std_diff}")
 # If you want to see individual data points, consider printing the array or parts of it
 print("Sample of Score:", match_score_array[:10])  # Print the first 10 for a sample
 
-#2. Count unique mentors who got matched
+#2. Count unique mentors and mentees who got matched
 unique_mentors_matched = match_scores_df['Mentor'].nunique()
+unique_mentees_matched = match_scores_df['Mentee'].nunique()
 
 print(f"Number of mentors who got matched: {unique_mentors_matched}")
+print(f"Number of mentees who got matched: {unique_mentees_matched}")
 
 #2 Analysis in Visulization
 print('\n Analysis in Visulization ---') 

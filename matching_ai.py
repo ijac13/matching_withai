@@ -17,7 +17,7 @@ no_reply_df = pd.read_csv('No-Reply_list.csv')
 # 1.2 Clean the Data
 # 1. Exclude test data
 # 2. Include people who are in the current cohort
-current_cohort = 'Fall 2023'
+current_cohort = 'Spring 2024'
 
 mentors_df = mentors_df[(mentors_df['Test content'] != 'true') 
                         & (mentors_df['Cohort'] == current_cohort)]
@@ -35,10 +35,10 @@ mentees_df = mentees_df.drop_duplicates(subset=['Email'], keep='first')
 
 # 5. Select only the necessary columns
 mentors_df = mentors_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
-                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Most Important Attribute', 
+                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
                          'Open Answer', 'Full Name', 'Avg Year of YOE']]
 mentees_df = mentees_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
-                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Most Important Attribute', 
+                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
                          'Open Answer', 'Full Name', 'Avg Year of YOE', 'Apply mentor']]
 no_reply_df = no_reply_df[['Email']]
 
@@ -87,16 +87,39 @@ print("Mentees columns:", mentees_df.info())
 
 
 # List of columns that contain comma-separated lists
-list_columns = ['In-Person Meeting Location', 'Roles', 'Industry', 'Company Stage', 'Topics', 'Most Important Attribute']
+list_columns = ['In-Person Meeting Location', 'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third']
 
-# Loop through each column and split the comma-separated strings into lists
-for column in list_columns:
-    mentors_df[column] = mentors_df[column].apply(lambda x: x.split(',') if pd.notnull(x) else [])
-    mentees_df[column] = mentees_df[column].apply(lambda x: x.split(',') if pd.notnull(x) else [])
+# # Loop through each column and split the comma-separated strings into lists
+# 4. Clean 'Important Attribute' columns by keeping only the first answer
+important_attribute_columns = ['Important Attribute - First', 'Important Attribute - Second', 'Important Attribute - Third']
 
-# # Export the first 10 rows to CSV files
-# mentors_df.head(10).to_csv('processed_mentors_sample.csv', index=True)
-# mentees_df.head(10).to_csv('processed_mentees_sample.csv', index=True)
+for column in important_attribute_columns:
+    mentors_df[column] = mentors_df[column].apply(lambda x: x.split(',')[0] if pd.notnull(x) else None)
+    mentees_df[column] = mentees_df[column].apply(lambda x: x.split(',')[0] if pd.notnull(x) else None)
+
+
+# 5. Combine 'Important Attribute' columns into one and maintain their order
+def combine_attributes(row):
+    # Extract the attributes, ignoring 'None'
+    attributes = [row['Important Attribute - First'], row['Important Attribute - Second'], row['Important Attribute - Third']]
+    filtered_attributes = [attr for attr in attributes if attr is not None]
+
+    # Join the filtered attributes with a chosen separator (e.g., ', ')
+    combined_attributes = ', '.join(filtered_attributes)
+    return combined_attributes
+
+# Apply the function to each row in both dataframes
+mentors_df['Most Important Attributes'] = mentors_df.apply(combine_attributes, axis=1)
+mentees_df['Most Important Attributes'] = mentees_df.apply(combine_attributes, axis=1)
+
+# Optionally, you can drop the original 'Important Attribute' columns if they are no longer needed
+mentors_df.drop(columns=['Important Attribute - First', 'Important Attribute - Second', 'Important Attribute - Third'], inplace=True)
+mentees_df.drop(columns=['Important Attribute - First', 'Important Attribute - Second', 'Important Attribute - Third'], inplace=True)
+
+
+# Export the first 10 rows to CSV files
+mentors_df.head(10).to_csv('processed_sample_mentors.csv', index=True)
+mentees_df.head(10).to_csv('processed_sample_mentees.csv', index=True)
 
 #Step 2: Define Weighting System
 #2.1 Decide weighting system
@@ -123,7 +146,7 @@ yoe_reward_good = 80  # Reward for YOE difference of 4-8 years
 yoe_reward_minimal = 10  # Minimal reward for YOE difference of >8 years
 
 # Define the offset threshold
-offset_threshold = 8 
+offset_threshold = 5  # Define the threshold based on the result from offse_analysis.py 
 
 #3.2 Hard Constraints
 # Iterate over each mentor-mentee pair
@@ -197,8 +220,9 @@ for match in match_info:
     # Iterate over each attribute to check for overlaps and their importance
     for attr in attributes:
         # Calculate the overlap
-        mentor_values = set(mentor_row[attr])
-        mentee_values = set(mentee_row[attr])
+        # Convert the attribute values to sets, ensuring they are iterable
+        mentor_values = set(mentor_row[attr] if isinstance(mentor_row[attr], list) else [])
+        mentee_values = set(mentee_row[attr] if isinstance(mentee_row[attr], list) else [])
         overlap = mentor_values.intersection(mentee_values)
         overlap_count = len(overlap)
         
@@ -214,16 +238,16 @@ for match in match_info:
             # Initialize the importance_weight
             importance_weight = 0
             # Ignore if the mentor's most important attribute is "No Preference"
-            if "No Preference" not in mentor_row['Most Important Attribute']:
+            if "No Preference" not in mentor_row['Most Important Attributes']:
                 # Check if this attribute is marked as important by the mentor and add its weight
-                if attr in mentor_row['Most Important Attribute']:
-                    mentor_importance_index = mentor_row['Most Important Attribute'].index(attr)
+                if attr in mentor_row['Most Important Attributes']:
+                    mentor_importance_index = mentor_row['Most Important Attributes'].index(attr)
                     mentor_importance_weight = importance_weights[mentor_importance_index]
             # Ignore if the mentee's most important attribute is "No Preference"
-            if "No Preference" not in mentee_row['Most Important Attribute']:
+            if "No Preference" not in mentee_row['Most Important Attributes']:
                 # Check if this attribute is marked as important by the mentee and add its weight
-                if attr in mentee_row['Most Important Attribute']:
-                    mentee_importance_index = mentee_row['Most Important Attribute'].index(attr)
+                if attr in mentee_row['Most Important Attributes']:
+                    mentee_importance_index = mentee_row['Most Important Attributes'].index(attr)
                     mentee_importance_weight = importance_weights[mentee_importance_index]
                 
             # Sum the importance weights from mentor and mentee
@@ -325,32 +349,76 @@ match_scores_df = match_scores_df[final_columns_order]
 print('export match_4_applymentor.csv')
 match_scores_df.to_csv('match_4_applymentor.csv')
 
-#Step 4: Selecting Highest 2 Matched Mentees for Each Mentor
-#1. Sort the DataFrame by 'Mentor' and 'Match Score' in descending order
-sorted_matches = match_scores_df.sort_values(by=['Mentor', 'Match Score'], ascending=[True, False])
+# Step 4: Maximize Matches while ensuring each mentee is matched with only one mentor
 
-#2. Group by 'Mentor' and take the first 2 matches for each mentor
-top_2_matches = sorted_matches.groupby('Mentor').head(2)
+# 1. Sort the DataFrame by 'Match Score' in descending order to prioritize higher scores
+sorted_matches = match_scores_df.sort_values(by=['Match Score','YOE Score','Offset Score','Counts of Overlap',
+                                                 'Important Attributes Score', 'Open Answer Score','Applied to Mentor Score','Offset Difference'], 
+                                             ascending=[False, False, False, False, False, False, False,True])
+match_scores_df['Match Score'] = pd.to_numeric(match_scores_df['Match Score'])
+sorted_matches = match_scores_df.sort_values(by=['Match Score'], ascending=[False])
 
-# Export csv for hard constraints
-print('export match_5_top2.csv')
-top_2_matches.to_csv('match_5_top2.csv')
+# Export the sorted DataFrame
+print('export match_5_sorting.csv')
+sorted_matches.to_csv('match_5_sorting.csv')
 
-#3. Leave only email and Match score
+
+# 2. Initialize empty DataFrames to keep track of matched mentors and mentees
+matched_mentors = pd.DataFrame(columns=sorted_matches.columns)
+matched_mentees = set()
+
+# 3. Iterate over the sorted matches
+# Initialize an empty list to collect rows
+rows_to_add = []
+
+# Iterate over the sorted matches
+for index, row in sorted_matches.iterrows():
+    mentor = row['Mentor']
+    mentee = row['Mentee']
+
+    # Check if mentee is already matched, skip if yes
+    if mentee in matched_mentees:
+        continue
+
+    # Check if mentor is already matched with 2 mentees, skip if yes
+    if len([r for r in rows_to_add if r['Mentor'] == mentor]) >= 2:
+        continue
+
+    # Add the row to the list
+    rows_to_add.append(row.to_dict())
+
+    # Mark the mentee as matched
+    matched_mentees.add(mentee)
+
+# Create a DataFrame from the list of rows
+matched_top2 = pd.DataFrame(rows_to_add)
+
+
+# 4. Reset index for the matched_mentors DataFrame
+matched_top2.reset_index(drop=True, inplace=True)
+
+# Export the matched mentors and mentees to a CSV file
+print('export match_6_top2.csv')
+matched_top2.to_csv('match_6_top2.csv', index=False)
+
+
+#5. Leave only email and Match score
 final_columns_order = ['Mentor', 'Mentee', 'Match Score']
-match_scores_df = top_2_matches[final_columns_order]
+match_scores_df = matched_top2[final_columns_order]
 
 # Export csv for hard constraints
-print('export match_6_final.csv')
-match_scores_df.to_csv('match_6_final.csv')
+print('export match_7_final.csv')
+match_scores_df.to_csv('match_7_final.csv')
 
-#Step 5: Exam the matching result 
-#1. Statistical Analysis of Match Scores
+# Step 5: Exam the matching result 
+# 1. Statistical Analysis of Match Scores
 # - check matchcurrent_analysis.py
 # - previous one, check matchprevious_analysis.py
 
-#2. Count unique mentors who got matched
+# 2. Count unique mentors who got matched
 unique_mentors_matched = match_scores_df['Mentor'].nunique()
+unique_mentees_matched = match_scores_df['Mentee'].nunique()
 
 print(f"Number of mentors who got matched: {unique_mentors_matched}")
+print(f"Number of mentees who got matched: {unique_mentees_matched}")
 
