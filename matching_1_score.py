@@ -466,6 +466,6 @@ print(f"Number of mentees who got matched for match_4: {unique_mentees_matched}"
 # Step 4: Save Match Score
 
 # Saving the DataFrames to CSV files
-mentors_df.to_csv('mentors_df.csv', index=False)
-mentees_df.to_csv('mentees_df.csv', index=False)
 match_scores_df.to_csv('match_1.5_score.csv', index=False)
+print("Total mentor available:", len(match_scores_df['Mentor'].unique()))
+print("Total mentees available:", len(match_scores_df['Mentee'].unique()))
