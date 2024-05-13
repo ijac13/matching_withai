@@ -41,10 +41,10 @@ mentees_df = mentees_df.drop_duplicates(subset=['Email'], keep='first')
 # 5. Select only the necessary columns
 mentors_df = mentors_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
                          'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
-                         'Open Answer', 'Full Name', 'Avg Year of YOE']]
+                         'Open Answer', 'Full Name', 'Avg Year of YOE', 'Identity Matching']]
 mentees_df = mentees_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
                          'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
-                         'Open Answer', 'Full Name', 'Avg Year of YOE', 'Apply mentor']]
+                         'Open Answer', 'Full Name', 'Avg Year of YOE', 'Apply mentor', 'Identity Matching']]
 no_reply_df = no_reply_df[['Email']]
 
 # 6. Set 'Email' as the index
@@ -103,7 +103,7 @@ print("Mentors columns:", mentors_df.info())
 print("Mentees columns:", mentees_df.info())
 
 # List of columns that contain comma-separated lists
-list_columns = ['In-Person Meeting Location', 'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third']
+list_columns = ['In-Person Meeting Location', 'Roles', 'Industry', 'Company Stage', 'Topics', 'Identity Matching', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third']
 
 # # Loop through each column and split the comma-separated strings into lists
 # 4. Clean 'Important Attribute' columns by keeping only the first answer
@@ -224,7 +224,16 @@ print(f"Number of mentees who got matched for match_1: {unique_mentees_matched}"
 
 #3.3 Reward the overlapping by Most important Attributes
 # Define the base score for an overlap
-base_overlap_score = 10
+# Define different base scores for each attribute
+base_overlap_score = {
+    'Roles': 40,
+    'Industry': 30,
+    'Company Stage': 20,
+    'Topics': 10,
+    'In-Person Meeting Location': 5,
+    'Identity Matching': 5
+}
+
 # Additional rewards based on ranking in 'Most Important Attributes'
 importance_weights = [3, 2, 1.5]
 
@@ -263,6 +272,7 @@ def calculate_overlap_and_score(mentor_attrs, mentee_attrs, mentor_importance, m
         #     continue  # Skip this attribute
 
         mentor_set = set(mentor_attrs.get(attr, []))
+        
         mentee_set = set(mentee_attrs.get(attr, []))
         overlap = mentor_set.intersection(mentee_set)
         overlap_count = len(overlap)
@@ -276,7 +286,8 @@ def calculate_overlap_and_score(mentor_attrs, mentee_attrs, mentor_importance, m
 
         if overlap_count > 0:
             total_overlaps += overlap_count
-            current_score = base_overlap_score * overlap_count
+            current_base_score = base_overlap_score.get(attr, 0)  # Get the specific base score for the attribute
+            current_score = current_base_score * overlap_count
             rank = -1  # Initialize rank with a default or placeholder value
             weight = 1  # Default weight if no importance is found
 
