@@ -19,7 +19,7 @@ no_reply_df = pd.read_csv('No-Reply_list.csv')
 #1.2 Clean the Data
 # 1. Exclude test data
 # 2. Include people who are in the current cohort
-current_cohort = 'Spring 2024'
+current_cohort = 'Spring 2025'
 
 mentors_df = mentors_df[(mentors_df['Test content'] == False) 
                         & (mentors_df['Cohort'] == current_cohort)]

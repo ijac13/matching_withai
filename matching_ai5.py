@@ -161,10 +161,10 @@ offset_threshold = 6  # Define the threshold based on the result from offse_anal
 
 # Define rewards and penalties 
 offset_reward = 100  # Reward for offset within the threshold
-offset_penalty = -150  # Penalty for offset beyond the threshold
-yoe_reward_ideal = 120  # Reward for YOE difference of 2-3 years
-yoe_reward_good = 80  # Reward for YOE difference of 4-8 years
-yoe_reward_minimal = 10  # Minimal reward for YOE difference of >8 years
+offset_penalty = -100  # Penalty for offset beyond the threshold
+yoe_reward_ideal = 150  # Reward for YOE difference of 2-3 years
+yoe_reward_good = 120  # Reward for YOE difference of 4-8 years
+yoe_reward_minimal = 20  # Minimal reward for YOE difference of >8 years
 
 
 #3.2 Hard Constraints
@@ -245,9 +245,9 @@ match_scores_df.to_csv('match_1_constraints.csv')
 
 #3.3 Reward the overlapping by Most important Attributes
 # Define the base score for an overlap
-base_overlap_score = 10
+base_overlap_score = 20
 # Additional rewards based on ranking in 'Most Important Attributes'
-importance_weights = [3, 2, 1.5]
+importance_weights = [5, 3, 2]
 
 # 1. Define a parsing function that splits a string on commas and strips any extra whitespace around the attribute names
 def parse_comma_separated_list(value):
@@ -410,7 +410,7 @@ mentors_df['Open Answer'] = mentors_df['Open Answer'].astype(str).fillna('')
 mentees_df['Open Answer'] = mentees_df['Open Answer'].astype(str).fillna('')
 
 # Define the reward for providing an open answer
-open_answer_reward = 20
+open_answer_reward = 50
 
 # Ensure 'Open Answer Score' column exists in match_scores_df
 match_scores_df['Open Answer Score'] = 0
@@ -458,7 +458,7 @@ match_scores_df.to_csv('match_3_openanswer.csv')
 match_scores_df['Apply Mentor Score'] = 0
 
 # Define the reward for mentees who have also applied to be mentors
-mentee_apply_mentor_reward = 15
+mentee_apply_mentor_reward = 30
 
 # Loop through each match to update the score based on whether the mentee has applied to be a mentor
 for idx, match in match_scores_df.iterrows():
@@ -581,4 +581,13 @@ print(f"Final matches made: {len(final_matches_df)}")
 print(f"Mentors matched: {final_matches_df['Mentor'].nunique()}")
 print(f"Mentees matched: {final_matches_df['Mentee'].nunique()}")
 print("=" * 50)
+
+# Check for negative match scores
+negative_scores = match_scores_df[match_scores_df['Match Score'] < 0]
+
+if not negative_scores.empty:
+    print("There are negative match scores.")
+    print(negative_scores)
+else:
+    print("All match scores are non-negative.")
 
