@@ -3,6 +3,8 @@
 2. it would take up to 5~10 minutes to run.
 3. when it runs, look at the IDE, it will print out information. 
 4. you'll get result as match_6_addmentee.csv
+5. then you can run comparison by "analysis_comparison.py"
+
 
 # Matching with AI
 A simple matching algorithm for a mentorship program.
