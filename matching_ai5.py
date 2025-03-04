@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt # Visualization with Python
 import numpy as np
 import ast
 import networkx as nx
+from datetime import datetime
 
 # Step 1: Data Preparation
 #1.1 Load the data
@@ -140,7 +141,7 @@ mentees_df.head(10).to_csv('processed_sample_mentees.csv', index=True)
 #2.1 Decide weighting system
 #Combining Penalty and Rewarding Systems
 
-#2.2 Analysis Offset to “decide” a threshold for maximum allowed difference
+#2.2 Analysis Offset to "decide" a threshold for maximum allowed difference
 # Export csv for offset analysis
 mentors_df.to_csv('mentors_offset_analysis.csv', index=True)
 mentees_df.to_csv('mentees_offset_analysis.csv', index=True)
@@ -221,6 +222,22 @@ unique_mentees_matched = match_scores_df['Mentee'].nunique()
 
 print(f"Number of mentors who got matched for match_1: {unique_mentors_matched}")
 print(f"Number of mentees who got matched for match_1: {unique_mentees_matched}")
+
+# After each match stage, add detailed statistics
+def print_match_statistics(df, stage_name):
+    print(f"\n=== {stage_name} Statistics ===")
+    print(f"Total matches found: {len(df)}")
+    print(f"Unique mentors: {df['Mentor'].nunique()}")
+    print(f"Unique mentees: {df['Mentee'].nunique()}")
+    print(f"Average match score: {df['Match Score'].mean():.2f}")
+    print(f"Score range: {df['Match Score'].min():.2f} to {df['Match Score'].max():.2f}")
+    print("Sample of top 5 matches:")
+    print(df.head())
+    print("=" * 50)
+
+# Add these calls after each matching stage
+print_match_statistics(match_scores_df, "Match 1 - Hard Constraints")
+match_scores_df.to_csv('match_1_constraints.csv')
 
 #3.3 Reward the overlapping by Most important Attributes
 # Define the base score for an overlap
@@ -320,7 +337,6 @@ match_scores_df['Overlap Score'] = match_scores_df['Overlap Score'].astype(float
 match_scores_df['Match Score'] = match_scores_df['Match Score'].astype(float)
 
 
-# Iterate and update directly
 for mentor_email in mentors_df.index:
     for mentee_email in mentees_df.index:
         mentor_data = mentors_df.loc[mentor_email]
@@ -381,6 +397,9 @@ unique_mentees_matched = match_scores_df['Mentee'].nunique()
 print(f"Number of mentors who got matched for match_2: {unique_mentors_matched}")
 print(f"Number of mentees who got matched for match_2: {unique_mentees_matched}")
 
+print_match_statistics(match_scores_df, "Match 2 - Overlaps")
+match_scores_df.to_csv('match_2_overlaps.csv')
+
 #3.4 Reward people who write Open Answer
 # Convert Open Answer to string, assuming NaNs or None should be treated as not provided
 mentors_df['Open Answer'] = mentors_df['Open Answer'].astype(str).fillna('')
@@ -427,6 +446,9 @@ unique_mentees_matched = match_scores_df['Mentee'].nunique()
 print(f"Number of mentors who got matched for match_3: {unique_mentors_matched}")
 print(f"Number of mentees who got matched for match_3: {unique_mentees_matched}")
 
+print_match_statistics(match_scores_df, "Match 3 - Open Answers")
+match_scores_df.to_csv('match_3_openanswer.csv')
+
 #3.5 Rewarding Mentees Who Applied to Be Mentors
 # Initialize the 'Apply Mentor Score' column in match_scores_df if it doesn't exist
 match_scores_df['Apply Mentor Score'] = 0
@@ -462,6 +484,9 @@ unique_mentees_matched = match_scores_df['Mentee'].nunique()
 
 print(f"Number of mentors who got matched for match_4: {unique_mentors_matched}")
 print(f"Number of mentees who got matched for match_4: {unique_mentees_matched}")
+
+print_match_statistics(match_scores_df, "Match 4 - Apply Mentor")
+match_scores_df.to_csv('match_4_applymentor.csv')
 
 # Step 4: Maximize Matches while ensuring each mentee is matched with only one mentor
 
@@ -541,4 +566,15 @@ unique_mentees_matched = final_matches_df['Mentee'].nunique()
 
 print(f"Number of mentors who got matched for match_5: {unique_mentors_matched}")
 print(f"Number of mentees who got matched for match_5: {unique_mentees_matched}")
+
+print_match_statistics(final_matches_df, "Match 5 - Final Matches")
+final_matches_df.to_csv('match_5_matches.csv', index=False)
+
+# Add a final summary
+print("\n=== Final Matching Summary ===")
+print(f"Initial pool: {len(mentors_df)} mentors and {len(mentees_df)} mentees")
+print(f"Final matches made: {len(final_matches_df)}")
+print(f"Mentors matched: {final_matches_df['Mentor'].nunique()}")
+print(f"Mentees matched: {final_matches_df['Mentee'].nunique()}")
+print("=" * 50)
 
