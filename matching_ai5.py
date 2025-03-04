@@ -17,6 +17,10 @@ no_reply_df = pd.read_csv('No-Reply_list.csv')
 # print("Mentee DataFrame columns:", mentees_df.columns)
 # print("No-Reply DataFrame columns:", no_reply_df.columns)
 
+# Check and rename the column if necessary
+if 'Email' in no_reply_df.columns:
+    no_reply_df.rename(columns={'Email': 'Coda Email'}, inplace=True)
+
 #1.2 Clean the Data
 # 1. Exclude test data
 # 2. Include people who are in the current cohort
@@ -31,27 +35,27 @@ print(f"Mentor submissions: {len(mentors_df)}")
 print(f"Mentee submissions: {len(mentees_df)}")
 
 # 3. Strip leading/trailing spaces and convert to lower case for consistency
-mentors_df['Email'] = mentors_df['Email'].str.strip().str.lower()
-mentees_df['Email'] = mentees_df['Email'].str.strip().str.lower()
-no_reply_df['Email'] = no_reply_df['Email'].str.strip().str.lower()  
+mentors_df['Coda Email'] = mentors_df['Coda Email'].str.strip().str.lower()
+mentees_df['Coda Email'] = mentees_df['Coda Email'].str.strip().str.lower()
+no_reply_df['Coda Email'] = no_reply_df['Coda Email'].str.strip().str.lower()  
 
-# 4. Remove duplicates on 'Email' field and keep='first' to keep the first occurrence.
-mentors_df = mentors_df.drop_duplicates(subset=['Email'], keep='first')
-mentees_df = mentees_df.drop_duplicates(subset=['Email'], keep='first')
+# 4. Remove duplicates on 'Coda Email' field and keep='first' to keep the first occurrence.
+mentors_df = mentors_df.drop_duplicates(subset=['Coda Email'], keep='first')
+mentees_df = mentees_df.drop_duplicates(subset=['Coda Email'], keep='first')
 
 # 5. Select only the necessary columns
-mentors_df = mentors_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
+mentors_df = mentors_df[['Coda Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
                          'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
                          'Open Answer', 'Full Name', 'Avg Year of YOE']]
-mentees_df = mentees_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
+mentees_df = mentees_df[['Coda Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
                          'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First','Important Attribute - Second','Important Attribute - Third', 
                          'Open Answer', 'Full Name', 'Avg Year of YOE', 'Apply mentor']]
-no_reply_df = no_reply_df[['Email']]
+no_reply_df = no_reply_df[['Coda Email']]
 
-# 6. Set 'Email' as the index
-mentors_df.set_index('Email', inplace=True)
-mentees_df.set_index('Email', inplace=True)
-no_reply_df.set_index('Email', inplace=True)
+# 6. Set 'Coda Email' as the index
+mentors_df.set_index('Coda Email', inplace=True)
+mentees_df.set_index('Coda Email', inplace=True)
+no_reply_df.set_index('Coda Email', inplace=True)
 
 # Print clean result
 print('Current cohort total submissions ---')
