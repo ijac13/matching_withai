@@ -1,3 +1,9 @@
+## how to use it
+1. run "matching_ai5.py". this is the latest matching. 
+2. it would take up to 5~10 minutes to run.
+3. when it runs, look at the IDE, it will print out information. 
+4. you'll get result as match_6_addmentee.csv
+
 # Matching with AI
 A simple matching algorithm for a mentorship program.
 
