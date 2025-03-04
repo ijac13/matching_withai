@@ -2,6 +2,9 @@ import pandas as pd #Python Data Analysis Library
 import matplotlib.pyplot as plt # Visualization with Python
 import numpy as np
 
+# Define the cohort as a variable
+current_cohort = 'Spring 2025'
+
 # Step 1: Data Preparation
 
 # 1.1 Clean the Data
@@ -17,18 +20,20 @@ no_reply_df = pd.read_csv('No-Reply_list.csv')
 # print("No-Reply DataFrame columns:", no_reply_df.columns)
 
 # Select only the necessary columns
-mentors_df = mentors_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
-                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Most Important Attribute', 
+mentors_df = mentors_df[['Coda Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
+                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First', 
+                         'Important Attribute - Second', 'Important Attribute - Third', 
                          'Open Answer', 'Cohort', 'Full Name', 'Test content', 'Avg Year of YOE']]
-mentees_df = mentees_df[['Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
-                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Most Important Attribute', 
+mentees_df = mentees_df[['Coda Email', 'Participation Commitment', 'Offset', 'In-Person Meeting Location', 
+                         'Roles', 'Industry', 'Company Stage', 'Topics', 'Important Attribute - First', 
+                         'Important Attribute - Second', 'Important Attribute - Third', 
                          'Open Answer', 'Cohort', 'Full Name', 'Test content', 'Avg Year of YOE', 'Apply mentor']]
 no_reply_df = no_reply_df[['Email']]
 
 # Strip leading/trailing spaces and convert to lower case for consistency
-mentors_df['Email'] = mentors_df['Email'].str.strip().str.lower()
-mentees_df['Email'] = mentees_df['Email'].str.strip().str.lower()
-no_reply_df['Email'] = no_reply_df['Email'].str.strip().str.lower()  
+mentors_df['Coda Email'] = mentors_df['Coda Email'].str.strip().str.lower()
+mentees_df['Coda Email'] = mentees_df['Coda Email'].str.strip().str.lower()
+no_reply_df['Coda Email'] = no_reply_df['Email'].str.strip().str.lower()  
 
 # Check the necessary columns
 print('\nCheck the necessary columns')
@@ -37,8 +42,8 @@ print("Mentee DataFrame columns:", mentees_df.columns)
 print("No-Reply DataFrame columns:", no_reply_df.columns)
 
 # Count current cohort submissions
-mentors_df = mentors_df[(mentors_df['Cohort'] == 'Fall 2023')]
-mentees_df = mentees_df[(mentees_df['Cohort'] == 'Fall 2023')]
+mentors_df = mentors_df[(mentors_df['Cohort'] == current_cohort)]
+mentees_df = mentees_df[(mentees_df['Cohort'] == current_cohort)]
 
 # Print current cohort submissions
 print('Current cohort total submissions ---')
@@ -51,12 +56,12 @@ print(f"Mentee submissions: {len(mentees_df)}")
 # Fitler 4. exclude from no-reply list
 mentors_df = mentors_df[(mentors_df['Test content'] != 'true') 
                         & (mentors_df['Participation Commitment'] == 'Yes')
-                        & (mentors_df['Cohort'] == 'Fall 2023')
-                        & ~mentors_df['Email'].isin(no_reply_df['Email'])]
+                        & (mentors_df['Cohort'] == current_cohort)
+                        & ~mentors_df['Coda Email'].isin(no_reply_df['Email'])]
 mentees_df = mentees_df[(mentees_df['Test content'] != 'true') 
                         & (mentees_df['Participation Commitment'] == 'Yes')
-                        & (mentees_df['Cohort'] == 'Fall 2023')
-                        & ~mentees_df['Email'].isin(no_reply_df['Email'])]
+                        & (mentees_df['Cohort'] == current_cohort)
+                        & ~mentees_df['Coda Email'].isin(no_reply_df['Email'])]
 
 # # debug: Print the first 5 rows of the mentors and mentees DataFrames to verify the cleaning
 # # print("Filter by current cohort")
@@ -69,9 +74,9 @@ print('\nCompare filtering results ---')
 print(f"Mentor submissions after filtering: {len(mentors_df)}")
 print(f"Mentee submissions after filtering: {len(mentees_df)}")
 
-# Remove duplicates on 'Email' field and keep='first' to keep the first occurrence.
-mentors_df = mentors_df.drop_duplicates(subset=['Email'], keep='first')
-mentees_df = mentees_df.drop_duplicates(subset=['Email'], keep='first')
+# Remove duplicates on 'Coda Email' field and keep='first' to keep the first occurrence.
+mentors_df = mentors_df.drop_duplicates(subset=['Coda Email'], keep='first')
+mentees_df = mentees_df.drop_duplicates(subset=['Coda Email'], keep='first')
 
 # # debug
 # # print('Remove duplications')
@@ -90,11 +95,11 @@ print(f"Mentee submissions after removing duplications: {len(mentees_df)}")
 # # print("test email in mentors:", test_email in mentors_df['Email'].values) 
 # # print("test email in no-reply:", test_email in no_reply_df['Email'].values) 
 
-# #1.2 Structure the Data
+#1.2 Structure the Data
 
-# Set 'Email' as the index
-mentors_df.set_index('Email', inplace=True)
-mentees_df.set_index('Email', inplace=True)
+# Set 'Coda Email' as the index
+mentors_df.set_index('Coda Email', inplace=True)
+mentees_df.set_index('Coda Email', inplace=True)
 
 # Drop unnecessary columns
 mentors_df.drop(['Participation Commitment', 'Test content'], axis=1, inplace=True)
@@ -108,7 +113,8 @@ mentees_df['Open Answer'] = mentees_df['Open Answer'].apply(lambda x: False if p
 # - 'Offset' is already a float and will be used for calculations as described.
 # - 'In-Person Meeting Location', 'Roles', 'Industry', 'Company Stage', 'Topics':
 #   These are lists of texts and will be used for matching based on text comparison or mapping.
-# - 'Most Important Attribute' contains column names and will guide the weighting in the matching algorithm.
+# - 'Important Attribute - First', 'Important Attribute - Second', 'Important Attribute - Third' 
+#   contain important attributes and will guide the weighting in the matching algorithm.
 # - 'Avg Year of YOE' is a float and will be used for experience-based matching.
 
 # Review the updated DataFrame structure
@@ -181,4 +187,8 @@ print(f"Standard Deviation of Offset Differences: {std_diff} hours")
 
 # If you want to see individual data points, consider printing the array or parts of it
 print("Sample of Offset Differences:", offset_diff_array[:10])  # Print the first 10 for a sample
+
+# Filter 4. exclude from no-reply list
+mentors_df = mentors_df[~mentors_df.index.isin(no_reply_df['Email'])]
+mentees_df = mentees_df[~mentees_df.index.isin(no_reply_df['Email'])]
 

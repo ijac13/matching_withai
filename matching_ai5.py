@@ -12,10 +12,10 @@ mentees_df = pd.read_csv('Mentee_Submissions.csv')
 no_reply_df = pd.read_csv('No-Reply_list.csv')  
 
 # # Check existing columns
-# print('Check existing columns')
-# print("Mentor DataFrame columns:", mentors_df.columns)
-# print("Mentee DataFrame columns:", mentees_df.columns)
-# print("No-Reply DataFrame columns:", no_reply_df.columns)
+print('Check existing columns')
+print("Mentor DataFrame columns:", mentors_df.columns)
+print("Mentee DataFrame columns:", mentees_df.columns)
+print("No-Reply DataFrame columns:", no_reply_df.columns)
 
 # Check and rename the column if necessary
 if 'Email' in no_reply_df.columns:
@@ -24,7 +24,7 @@ if 'Email' in no_reply_df.columns:
 #1.2 Clean the Data
 # 1. Exclude test data
 # 2. Include people who are in the current cohort
-current_cohort = 'Spring 2024'
+current_cohort = 'Spring 2025' ##update t
 
 mentors_df = mentors_df[(mentors_df['Test content'] == False) 
                         & (mentors_df['Cohort'] == current_cohort)]
